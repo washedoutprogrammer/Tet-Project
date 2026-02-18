@@ -1,0 +1,190 @@
+:root {
+    --bg-color: #0f172a;
+    --glass-bg: rgba(30, 41, 59, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --accent-green: #22c55e;
+    --text-color: #e2e8f0;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--bg-color);
+    background-image: radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), radial-gradient(at 50% 0%, hsla(225,39%,30%,1) 0, transparent 50%), radial-gradient(at 100% 0%, hsla(339,49%,30%,1) 0, transparent 50%);
+    color: var(--text-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    overflow: hidden;
+}
+
+/* --- Glassmorphism Utilities --- */
+.glass {
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+/* --- Main Layout --- */
+.main-container {
+    display: flex;
+    width: 900px;
+    height: 650px;
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+/* --- Sidebar Controls --- */
+.sidebar {
+    width: 250px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    border-right: 1px solid var(--glass-border);
+}
+
+.control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #94a3b8;
+}
+
+.input-display {
+    padding: 12px;
+    border-radius: 8px;
+    font-weight: bold;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.balance-container {
+    font-size: 1.2rem;
+    margin-bottom: 20px;
+}
+        
+#balance-amount {
+    color: var(--accent-green);
+}
+
+.play-button {
+    margin-top: auto;
+    padding: 16px;
+    border: none;
+    border-radius: 8px;
+    background-color: var(--accent-green);
+    color: white;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+.play-button:hover {
+    background-color: #16a34a;
+}
+.play-button:active {
+    transform: scale(0.98);
+}
+.play-button:disabled {
+    background-color: #94a3b8;
+    cursor: not-allowed;
+}
+
+
+/* --- Game Board Area --- */
+.game-board {
+    flex-grow: 1;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.plinko-pyramid {
+    position: relative;
+    width: 100%;
+    max-width: 600px;
+    height: 450px;
+    /* To visualize the grid for debugging */
+    /* border: 1px dashed rgba(255,255,255,0.1); */
+}
+
+.peg-row {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 22px; /* Spacing between rows */
+}
+
+.peg {
+    width: 10px;
+    height: 10px;
+    background-color: white;
+    border-radius: 50%;
+    margin: 0 10px; /* Spacing between pegs horizontally */
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+}
+
+/* --- Ball Animation --- */
+.ball {
+    position: absolute;
+    top: -20px; /* Start slightly above */
+    left: 50%;
+    width: 16px;
+    height: 16px;
+    background-color: #fbbf24; /* Gold color */
+    border-radius: 50%;
+    transform: translateX(-50%);
+    box-shadow: 0 0 10px #fbbf24;
+    z-index: 10;
+    transition: all 0.3s ease-in-out;
+}
+
+/* --- Multiplier Slots --- */
+.multipliers-container {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 10px;
+    width: 100%;
+    max-width: 600px;
+}
+
+.slot {
+    flex: 1;
+    padding: 8px 4px;
+    text-align: center;
+    font-size: 0.75rem;
+    font-weight: bold;
+    border-radius: 4px;
+    color: #000;
+    /* Default Glass style for slots */
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(4px);
+    border-top: 2px solid rgba(255, 255, 255, 0.2);
+    transition: transform 0.2s ease-out;
+}
+        
+.slot.active-win {
+    transform: scale(1.2);
+    z-index: 5;
+    box-shadow: 0 0 15px currentColor;
+}
+
+/* Slot Colors based on risk (simulated from image) */
+.slot-red { background-color: #ef4444; border-color: #f87171; color: white; }
+.slot-orange { background-color: #f97316; border-color: #fb923c; color: white; }
+.slot-yellow { background-color: #eab308; border-color: #facc15; }

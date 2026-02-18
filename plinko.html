@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Glassmorphism Plinko</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <div class="main-container glass">
+        <div class="sidebar glass">
+            <div class="balance-container">
+                Balance: <span id="balance-amount">$500.00</span>
+            </div>
+
+            <div class="control-group">
+                <label>Bet Amount</label>
+                <div class="input-display glass">
+                    <span>$ 2.00</span>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label>Risk</label>
+                <div class="input-display glass">
+                    <span>High</span>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label>Rows</label>
+                <div class="input-display glass">
+                    <span>16</span>
+                </div>
+            </div>
+
+            <button id="play-btn" class="play-button">Play</button>
+        </div>
+
+        <div class="game-board">
+            <div class="plinko-pyramid" id="pyramid-container">
+                </div>
+            <div class="multipliers-container" id="multipliers-container">
+                </div>
+        </div>
+    </div>
+
+
+    <script src="script.js"></script>
+</body>
+</html>
