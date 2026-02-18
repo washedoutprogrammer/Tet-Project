@@ -20,6 +20,53 @@ let currentState = {
     isPlaying: false,
     activeBalls: 0
 };
+// Web Audio for hit sounds
+let audioCtx = null;
+let masterGain = null;
+
+function initAudio() {
+    if (audioCtx) return;
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    masterGain = audioCtx.createGain();
+    masterGain.gain.value = 0.5; // master volume
+    masterGain.connect(audioCtx.destination);
+}
+
+function playHitSound(multiplierValue) {
+    try {
+        if (!audioCtx) initAudio();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+
+        // Map multiplier to frequency (higher multiplier -> higher pitch)
+        const vals = config.multipliers;
+        const min = Math.min(...vals);
+        const max = Math.max(...vals);
+        const t = (multiplierValue - min) / (max - min || 1);
+        const freqMin = 220;
+        const freqMax = 1400;
+        const freq = freqMin + t * (freqMax - freqMin);
+
+        const osc = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = freq;
+
+        // Short percussive envelope
+        const now = audioCtx.currentTime;
+        g.gain.setValueAtTime(0.0001, now);
+        g.gain.exponentialRampToValueAtTime(0.6, now + 0.01);
+        g.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+
+        osc.connect(g);
+        g.connect(masterGain);
+        osc.start(now);
+        osc.stop(now + 0.26);
+        osc.onended = () => { try { osc.disconnect(); g.disconnect(); } catch(e){} };
+    } catch (e) {
+        // fail silently if audio not available
+        console.warn('Audio failed', e);
+    }
+}
 // Stats tracking
 currentState.totalWagered = 0;
 currentState.totalWon = 0;
@@ -97,6 +144,8 @@ function createBoard() {
 // --- Game Logic & Animation ---
 
 function handlePlayClick() {
+    // Initialize audio on first user gesture
+    try { initAudio(); } catch(e) {}
     const balls = Math.max(1, config.ballsPerDrop || 1);
     const totalCost = config.betCost * balls;
     if (currentState.balance < totalCost) return;
@@ -189,6 +238,8 @@ function finishDrop(ball, finalIndex, resolveCallback) {
     
     // 2. Calculate Winnings
     const multiplier = config.multipliers[finalIndex];
+    // Play hit sound mapped to multiplier
+    try { playHitSound(multiplier); } catch (e) {}
     const winnings = config.betCost * multiplier;
     currentState.balance += winnings;
     // Update stats
