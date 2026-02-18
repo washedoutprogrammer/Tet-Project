@@ -20,6 +20,11 @@ let currentState = {
     isPlaying: false,
     activeBalls: 0
 };
+// Stats tracking
+currentState.totalWagered = 0;
+currentState.totalWon = 0;
+currentState.wins = 0;
+currentState.losses = 0;
 
 // --- DOM Elements ---
 const balanceEl = document.getElementById('balance-amount');
@@ -32,12 +37,35 @@ function initGame() {
     updateBalanceUI();
     createBoard();
     playBtn.addEventListener('click', handlePlayClick);
+    updateStatsUI();
 }
 
 function updateBalanceUI() {
     balanceEl.textContent = `$${currentState.balance.toFixed(2)}`;
     // Enable/disable Play button based on available balance only
     if (playBtn) playBtn.disabled = currentState.balance < config.betCost;
+}
+
+function formatCurrency(v) {
+    return `$${v.toFixed(2)}`;
+}
+
+function updateStatsUI() {
+    const wageredEl = document.getElementById('stats-wagered');
+    const profitEl = document.getElementById('stats-profit');
+    const winsEl = document.getElementById('stats-wins');
+    const lossesEl = document.getElementById('stats-losses');
+
+    if (wageredEl) wageredEl.textContent = formatCurrency(currentState.totalWagered);
+    const profit = currentState.totalWon - currentState.totalWagered;
+    if (profitEl) {
+        profitEl.textContent = formatCurrency(profit);
+        profitEl.classList.remove('stat-profit-positive', 'stat-profit-negative');
+        if (profit > 0) profitEl.classList.add('stat-profit-positive');
+        else if (profit < 0) profitEl.classList.add('stat-profit-negative');
+    }
+    if (winsEl) winsEl.textContent = `${currentState.wins}`;
+    if (lossesEl) lossesEl.textContent = `${currentState.losses}`;
 }
 
 function createBoard() {
@@ -76,6 +104,9 @@ function handlePlayClick() {
     // Deduct total cost for this click's balls
     currentState.balance -= totalCost;
     updateBalanceUI();
+    // Track total wagered
+    currentState.totalWagered += totalCost;
+    updateStatsUI();
 
     // Track active balls so user may keep spawning while others fall
     currentState.activeBalls += balls;
@@ -160,6 +191,11 @@ function finishDrop(ball, finalIndex, resolveCallback) {
     const multiplier = config.multipliers[finalIndex];
     const winnings = config.betCost * multiplier;
     currentState.balance += winnings;
+    // Update stats
+    currentState.totalWon += winnings;
+    if (multiplier > 1) currentState.wins += 1;
+    else currentState.losses += 1;
+    updateStatsUI();
     
     // 3. Visual Feedback
     const winningSlot = document.getElementById(`slot-${finalIndex}`);
