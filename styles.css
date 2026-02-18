@@ -156,7 +156,7 @@ label {
 .stat-profit-negative { color: #ef4444; }
 
 /* --- Responsive: stack for small screens --- */
-@media (max-width: 730px) {
+@media (max-width: 850px) {
     .main-container {
         flex-direction: column;
         height: auto;
