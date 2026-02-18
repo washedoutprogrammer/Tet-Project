@@ -184,18 +184,19 @@ label {
     left: 50%;
     width: 16px;
     height: 16px;
-    background-color: #fbbf24; /* Gold color */
+    background-color: #e32121; /* Red color */
     border-radius: 50%;
     transform: translateX(-50%);
-    box-shadow: 0 0 10px #fbbf24;
+    box-shadow: 0 0 10px #ff493f; 
     z-index: 10;
     transition: all 0.3s ease-in-out;
 }
 
 /* --- Multiplier Slots --- */
 .multipliers-container {
-    display: flex;
-    justify-content: center;
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
     gap: 6px;
     margin-top: 80px;
     width: 100%;
@@ -203,9 +204,15 @@ label {
 }
 
 .slot {
-    flex: 1;
     padding: 8px 4px;
-    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+    box-sizing: border-box;
     font-size: 0.75rem;
     font-weight: bold;
     border-radius: 4px;
