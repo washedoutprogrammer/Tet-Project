@@ -17,7 +17,7 @@ body {
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    overflow: hidden;
+    overflow: auto;
 }
 
 /* --- Glassmorphism Utilities --- */
@@ -32,8 +32,10 @@ body {
 /* --- Main Layout --- */
 .main-container {
     display: flex;
-    width: 1120px;
+    width: 100%;
+    max-width: 1120px;
     height: 650px;
+    margin: 20px auto;
     border-radius: 16px;
     overflow: hidden;
 }
@@ -153,11 +155,98 @@ label {
 .stat-profit-positive { color: #22c55e; }
 .stat-profit-negative { color: #ef4444; }
 
+/* --- Responsive: stack for small screens --- */
+@media (max-width: 730px) {
+    .main-container {
+        flex-direction: column;
+        height: auto;
+        margin: 12px;
+    }
+
+    .sidebar {
+        width: 100%;
+        padding: 8px;
+        order: 0;
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        gap: 5px;
+        align-items: center;
+        justify-content: space-around;
+    }
+
+    /* Sidebar children: keep controls compact so Play fits */
+    .sidebar > * { min-width: 0; box-sizing: border-box; }
+
+    /* Make control groups size to their content (compact) */
+    .sidebar > :not(.play-button) { flex: 0 0 auto; }
+    .control-group { flex: 0 0 auto; }
+
+    /* Shrink input displays to compact paddings and small min-width */
+    .input-display { flex: 0 0 auto; min-width: 56px; padding: 8px 6px; }
+
+    /* Make play button smaller so it fits in a horizontal sidebar */
+    .play-button { flex: 0 0 64px; min-width: 64px; max-width: 90px; margin-top: 0; padding: 10px; font-size: 1rem; }
+
+    .game-board {
+        width: 100%;
+        order: 1;
+        padding: 12px;
+    }
+    .stats-panel {
+        width: 100%;
+        order: 2;
+        border-left: none;
+        border-top: 1px solid var(--glass-border);
+        padding: 12px;
+    }
+
+    /* Prevent stats overflow and allow wrapping */
+    .stats-panel, .stat-item {
+        min-width: 0;
+        box-sizing: border-box;
+    }
+
+    .stat-item {
+        word-break: break-word;
+        overflow-wrap: anywhere;
+    }
+
+    .stat-item span { max-width: 60%; display: inline-block; text-align: right; }
+
+    .game-title {
+        font-size: 1rem;
+        margin: 4px 0 8px 0;
+    }
+
+    .plinko-pyramid {
+        max-width: 100%;
+        aspect-ratio: 4 / 3;
+        height: auto;
+    }
+
+    .multipliers-container {
+        margin-top: 12px;
+        gap: 4px;
+        max-width: 100%;
+    }
+
+    .slot {
+        font-size: 0.65rem;
+        padding: 6px 4px;
+    }
+
+    /* additional small-screen tuning handled above for play-button */
+
+    .balance-container { font-size: 1rem; }
+}
+
 .plinko-pyramid {
     position: relative;
     width: 100%;
     max-width: 600px;
-    height: 450px;
+    aspect-ratio: 4 / 3;
+    height: auto;
     /* To visualize the grid for debugging */
     /* border: 1px dashed rgba(255,255,255,0.1); */
 }
