@@ -7,6 +7,8 @@ const config = {
     ballSize: 16,
     startBalance: 500.00,
     betCost: 2.00,
+    // Number of balls to drop per play (default: single)
+    ballsPerDrop: 1,
     // Multipliers mirroring the "High" risk pattern (high edges, low center)
     multipliers: [110, 41, 10, 5, 3, 1.5, 1, 0.5, 0.3, 0.5, 1, 1.5, 3, 5, 10, 41, 110],
     colors: ['red', 'red', 'red', 'orange', 'orange', 'orange', 'yellow', 'yellow', 'yellow', 'yellow', 'yellow', 'orange', 'orange', 'orange', 'red', 'red', 'red']
@@ -15,7 +17,8 @@ const config = {
 // --- State ---
 let currentState = {
     balance: config.startBalance,
-    isPlaying: false
+    isPlaying: false,
+    activeBalls: 0
 };
 
 // --- DOM Elements ---
@@ -33,6 +36,8 @@ function initGame() {
 
 function updateBalanceUI() {
     balanceEl.textContent = `$${currentState.balance.toFixed(2)}`;
+    // Enable/disable Play button based on available balance only
+    if (playBtn) playBtn.disabled = currentState.balance < config.betCost;
 }
 
 function createBoard() {
@@ -63,67 +68,79 @@ function createBoard() {
 
 // --- Game Logic & Animation ---
 
-async function handlePlayClick() {
-    if (currentState.isPlaying || currentState.balance < config.betCost) return;
+function handlePlayClick() {
+    const balls = Math.max(1, config.ballsPerDrop || 1);
+    const totalCost = config.betCost * balls;
+    if (currentState.balance < totalCost) return;
 
-    // Deduct bet
-    currentState.balance -= config.betCost;
+    // Deduct total cost for this click's balls
+    currentState.balance -= totalCost;
     updateBalanceUI();
-    currentState.isPlaying = true;
-    playBtn.disabled = true;
 
-    await dropBall();
+    // Track active balls so user may keep spawning while others fall
+    currentState.activeBalls += balls;
 
-    currentState.isPlaying = false;
-    playBtn.disabled = false;
+    // Spawn balls without awaiting so clicks remain responsive
+    for (let i = 0; i < balls; i++) {
+        const stagger = i * 60; // 60ms between spawns
+        dropBall(stagger).then(() => {
+            currentState.activeBalls = Math.max(0, currentState.activeBalls - 1);
+            // when last ball finishes, ensure UI state is consistent
+            if (currentState.activeBalls === 0) {
+                // nothing special to do for now
+            }
+        });
+    }
 }
 
-function dropBall() {
+function dropBall(startDelay = 0) {
     return new Promise((resolve) => {
-        const ball = document.createElement('div');
-        ball.classList.add('ball');
-        pyramidContainer.appendChild(ball);
+        setTimeout(() => {
+            const ball = document.createElement('div');
+            ball.classList.add('ball');
+            pyramidContainer.appendChild(ball);
 
-        // Calculate path beforehand (simplified physics: 50/50 L/R at each peg)
-        let path = [];
-        let currentSlotIndex = 0; // Starts at the "center" of the path options
+            // Calculate path beforehand (simplified physics: 50/50 L/R at each peg)
+            let path = [];
+            let currentSlotIndex = 0; // Starts at the "center" of the path options
 
-        for (let i = 0; i < config.rows; i++) {
-            // 0 = Left, 1 = Right
-            const direction = Math.random() > 0.5 ? 1 : 0; 
-            path.push(direction);
-            currentSlotIndex += direction;
-        }
-         // currentSlotIndex now ranges from 0 to 16, matching our multiplier array indices
-
-        let currentRow = 0;
-
-        // Animation Interval
-        const animationInterval = setInterval(() => {
-            if (currentRow < config.rows) {
-                // Move ball down to next row
-                const nextStepIndex = path.slice(0, currentRow + 1).reduce((a,b) => a+b, 0);
-                
-                // Calculate visual positions relative to the container
-                // Center offset determines how far left/right from center line the ball is
-                const rowWidth = (currentRow + 3) * config.pegSpacingX;
-                const centerOffset = (nextStepIndex - (currentRow/2)) * config.pegSpacingX;
-                
-                const topPos = (currentRow + 1) * config.rowSpacingY;
-                // Slight random horizontal jitter for realism
-                const jitter = (Math.random() - 0.5) * 4; 
-
-                ball.style.top = `${topPos}px`;
-                // Adjust translateX to center ball relative to pyramid center
-                ball.style.transform = `translateX(calc(-50% + ${centerOffset + jitter}px))`;
-
-                currentRow++;
-            } else {
-                // Reached Bottom
-                clearInterval(animationInterval);
-                finishDrop(ball, currentSlotIndex, resolve);
+            for (let i = 0; i < config.rows; i++) {
+                // 0 = Left, 1 = Right
+                const direction = Math.random() > 0.5 ? 1 : 0; 
+                path.push(direction);
+                currentSlotIndex += direction;
             }
-        }, 250); // Speed of the drop between rows
+             // currentSlotIndex now ranges from 0 to 16, matching our multiplier array indices
+
+            let currentRow = 0;
+
+            // Animation Interval
+            const animationInterval = setInterval(() => {
+                if (currentRow < config.rows) {
+                    // Move ball down to next row
+                    const nextStepIndex = path.slice(0, currentRow + 1).reduce((a,b) => a+b, 0);
+                    
+                    // Calculate visual positions relative to the container
+                    // Center offset determines how far left/right from center line the ball is
+                    const rowWidth = (currentRow + 3) * config.pegSpacingX;
+                    const centerOffset = (nextStepIndex - (currentRow/2)) * config.pegSpacingX;
+                    
+                    const topPos = (currentRow + 1) * config.rowSpacingY;
+                    // Slight random horizontal jitter for realism
+                    const jitter = (Math.random() - 0.5) * 4; 
+
+                    ball.style.top = `${topPos}px`;
+                    // Adjust translateX to center ball relative to pyramid center
+                    ball.style.transform = `translateX(calc(-50% + ${centerOffset + jitter}px))`;
+
+                    currentRow++;
+                } else {
+                    // Reached Bottom
+                    clearInterval(animationInterval);
+                    finishDrop(ball, currentSlotIndex, resolve);
+                }
+            }, 250); // Speed of the drop between rows
+        }, startDelay);
     });
 }
 
